@@ -506,39 +506,40 @@ async function sendMessage() {
 
 // Load seminars from Supabase
 async function loadSeminars() {
-  const anonClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-    auth: { persistSession: false }
-  });
-  const { data, error } = await anonClient
-    .from('seminars')
-    .select('*')
-    .order('event_date', { ascending: true })
-    .limit(4);
+  try {
+    const res = await fetch(
+      'https://opuiebofegybtcrywbjg.supabase.co/rest/v1/seminars?select=*&order=event_date.asc&limit=4',
+      {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY
+        }
+      }
+    );
+    const data = await res.json();
+    if (!data || !data.length) return;
 
-  if (error || !data) return;
-
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-  const html = data.map(s => {
-    const date = new Date(s.event_date);
-    const month = months[date.getMonth()];
-    const day = date.getDate();
-    return `
-      <div class="seminar-item reveal">
-        <div class="seminar-date">
-          <div class="month">${month}</div>
-          <div class="day">${day}</div>
-        </div>
-        <div class="seminar-info">
-          <h4>${s.title}</h4>
-          <p>${s.description || ''}</p>
-          <span class="seminar-type">${s.type || 'Event'}</span>
-        </div>
-      </div>`;
-  }).join('');
-
-  document.querySelectorAll('#seminar-list .reveal')
-  .forEach(el => el.classList.add('visible'));
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    document.getElementById('seminar-list').innerHTML = data.map(s => {
+      const date  = new Date(s.event_date);
+      const month = months[date.getMonth()];
+      const day   = date.getDate();
+      return `
+        <div class="seminar-item">
+          <div class="seminar-date">
+            <div class="month">${month}</div>
+            <div class="day">${day}</div>
+          </div>
+          <div class="seminar-info">
+            <h4>${s.title}</h4>
+            <p>${s.description || ''}</p>
+            <span class="seminar-type">${s.type || 'Event'}</span>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    console.error('Seminars error:', e);
+  }
 }
 
 document.querySelector('.submit-btn').addEventListener('click', sendMessage);
