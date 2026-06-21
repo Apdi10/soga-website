@@ -694,7 +694,7 @@ const {error}=await sb.from('seminars').insert({
   btn.disabled=false;btn.textContent='Kaydi';
   if(error){showToast('Khalad: '+error.message,false);}
   else{showToast('Seminar waa la kaydiyay! ✓');closeModal();loadSeminars();loadAll();}
-}
+
 document.getElementById('seminarModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 </script>
 
