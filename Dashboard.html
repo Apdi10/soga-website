@@ -663,18 +663,26 @@ async function saveSeminar(){
   if(!title||!date||!location){showToast('Fadlan buuxi: Title, Taarikh, Goobta!',false);return;}
   const btn=document.getElementById('saveSemBtn');
   btn.disabled=true;btn.textContent='Kaydinaya...';
-  var speakerImageUrl = null;
-var imgFile = document.getElementById('sem-speaker-img').files[0];
-if (imgFile) {
-  const fileName = Date.now() + '_' + imgFile.name.replace(/\s/g,'_');
-  const { error: uploadError } = await sb.storage
-    .from('speaker-images').upload(fileName, imgFile, {upsert:true});
-  if (!uploadError) {
-    const { data: urlData } = sb.storage
-      .from('speaker-images').getPublicUrl(fileName);
-    speakerImageUrl = urlData.publicUrl;
+  var speakerImageUrl=null;
+  var imgFile=document.getElementById('sem-speaker-img').files[0];
+  if(imgFile){
+    var fileName=Date.now()+'_'+imgFile.name.replace(/\s/g,'_');
+    var uploadResult=await sb.storage.from('speaker-images').upload(fileName,imgFile,{upsert:true});
+    if(!uploadResult.error){
+      var urlData=sb.storage.from('speaker-images').getPublicUrl(fileName);
+      speakerImageUrl=urlData.data.publicUrl;
+    }
   }
-}
+  var result=await sb.from('seminars').insert({
+    title,type,event_date:date,location,
+    capacity:capacity?parseInt(capacity):null,
+    description:desc||null,
+    speaker_name:speaker||null,
+    speaker_image:speakerImageUrl
+  });
+  btn.disabled=false;btn.textContent='Kaydi';
+  if(result.error){showToast('Khalad: '+result.error.message,false);}
+  else{showToast('Seminar waa la kaydiyay! ✓');closeModal();loadSeminars();loadAll();}
 }
 const {error}=await sb.from('seminars').insert({
   title,type,event_date:date,location,
