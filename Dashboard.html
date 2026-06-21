@@ -632,6 +632,7 @@ function showToast(msg) {
 
 // ---- INIT ----
 (async function() {
+  await sb.auth.signOut();
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     const { data: profile } = await sb.from('profiles').select('*').eq('id',session.user.id).single();
