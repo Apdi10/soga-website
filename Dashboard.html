@@ -663,11 +663,37 @@ async function saveSeminar(){
   if(!title||!date||!location){showToast('Fadlan buuxi: Title, Taarikh, Goobta!',false);return;}
   const btn=document.getElementById('saveSemBtn');
   btn.disabled=true;btn.textContent='Kaydinaya...';
-  const {error}=await sb.from('seminars').insert({
-    title,type,event_date:date,location,
-    capacity:capacity?parseInt(capacity):null,
-    description:speaker?(desc?desc+'\n\nSpeaker: '+speaker:'Speaker: '+speaker):desc||null
-  });
+  var speakerImageUrl = null;
+var imgFile = document.getElementById('sem-speaker-img').files[0];
+if (imgFile) {
+  const fileName = Date.now() + '_' + imgFile.name.replace(/\s/g,'_');
+  const { data: uploadData, error: uploadError } = await sb.storage
+    .from('speaker-images').upload(fileName, imgFile, {upsert:true});
+  if (!uploadError) {
+    const { data: urlData } = sb.storage
+      .from('speaker-images').getPublicUrl(fileName);
+    speakerImageUrl = urlData.publicUrl;
+  }
+}
+  var speakerImageUrl = null;
+const imgFile = document.getElementById('sem-speaker-img').files[0];
+if (imgFile) {
+  const fileName = Date.now() + '_' + imgFile.name.replace(/\s/g,'_');
+  const { error: uploadError } = await sb.storage
+    .from('speaker-images').upload(fileName, imgFile, {upsert:true});
+  if (!uploadError) {
+    const { data: urlData } = sb.storage
+      .from('speaker-images').getPublicUrl(fileName);
+    speakerImageUrl = urlData.publicUrl;
+  }
+}
+const {error}=await sb.from('seminars').insert({
+  title,type,event_date:date,location,
+  capacity:capacity?parseInt(capacity):null,
+  description:desc||null,
+  speaker_name:speaker||null,
+  speaker_image:speakerImageUrl
+});
   btn.disabled=false;btn.textContent='Kaydi';
   if(error){showToast('Khalad: '+error.message,false);}
   else{showToast('Seminar waa la kaydiyay! ✓');closeModal();loadSeminars();loadAll();}
@@ -694,7 +720,8 @@ document.getElementById('seminarModal').addEventListener('click',function(e){if(
     <div class="form-group"><label>Taarikh *</label><input type="date" id="sem-date"></div>
     <div class="form-group"><label>Goobta *</label><input type="text" id="sem-location" placeholder="Mogadishu, Hotel Jazeera"></div>
     <div class="form-group"><label>Capacity</label><input type="number" id="sem-capacity" placeholder="100" min="1"></div>
-    <div class="form-group"><label>Speaker / Qofka Jeediyaha</label><input type="text" id="sem-speaker" placeholder="Dr. Ahmed Hassan"></div>
+    <div class="form-group"><label>Speaker Magac</label><input type="text" id="sem-speaker" placeholder="Dr. Ahmed Hassan"></div>
+    <div class="form-group"><label>Speaker Sawir</label><input type="file" id="sem-speaker-img" accept="image/*"></div>
     <div class="form-group"><label>Description</label><textarea id="sem-desc" rows="3" placeholder="Faahfaahin..."></textarea></div>
     <div class="modal-footer">
       <button class="modal-btn cancel" onclick="closeModal()">Jooji</button>

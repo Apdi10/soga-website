@@ -200,6 +200,9 @@ section{padding:5rem 4rem}
 .seminar-info h4{font-size:14px;font-weight:700;color:var(--text-main);margin-bottom:3px;line-height:1.4}
 .seminar-info p{font-size:12px;color:var(--text-muted);line-height:1.5}
 .seminar-type{display:inline-block;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:3px 10px;background:var(--green-pale);color:var(--green-dark);border-radius:10px;margin-top:6px;font-weight:600}
+.seminar-card-footer{display:flex;justify-content:flex-end;margin-top:8px}
+.seminar-delete-btn{padding:5px 10px;border:1px solid rgba(231,76,60,0.25);border-radius:999px;background:rgba(231,76,60,0.08);color:var(--red);font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;transition:all 0.2s}
+.seminar-delete-btn:hover{background:var(--red);color:var(--white);border-color:var(--red);transform:translateY(-1px)}
 
 /* ===== CONTACT ===== */
 .contact-section{background:var(--white)}
@@ -508,7 +511,7 @@ async function sendMessage() {
 async function loadSeminars() {
   try {
     const res = await fetch(
-      'https://opuiebofegybtcrywbjg.supabase.co/rest/v1/seminars?select=*&order=event_date.asc&limit=4',
+      'https://opuiebofegybtcrywbjg.supabase.co/rest/v1/seminars?select=*&order=event_date.asc',
       {
         headers: {
           'apikey': SUPABASE_KEY,
@@ -532,13 +535,40 @@ async function loadSeminars() {
           </div>
           <div class="seminar-info">
             <h4>${s.title}</h4>
-            <p>${s.description || ''}</p>
-            <span class="seminar-type">${s.type || 'Event'}</span>
+            <p>${s.description||''}</p>
+            ${s.speaker_name||s.speaker_image?`
+              <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+                ${s.speaker_image?`<img src="${s.speaker_image}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--green-dark)">`:'' }
+                ${s.speaker_name?`<span style="font-size:12px;color:var(--green-dark);font-weight:600">🎤 ${s.speaker_name}</span>`:''}
+              </div>`:''}
+            <span class="seminar-type">${s.type||'Event'}</span>
           </div>
         </div>`;
     }).join('');
   } catch(e) {
     console.error('Seminars error:', e);
+  }
+}
+
+async function deleteSeminar(id) {
+  if (!confirm('Delete this seminar?')) return;
+  try {
+    const res = await fetch(
+      `https://opuiebofegybtcrywbjg.supabase.co/rest/v1/seminars?id=eq.${encodeURIComponent(id)}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Prefer': 'return=minimal'
+        }
+      }
+    );
+    if (!res.ok) throw new Error('Delete failed');
+    loadSeminars();
+  } catch (e) {
+    console.error('Delete seminar error:', e);
+    alert('Could not delete seminar.');
   }
 }
 
