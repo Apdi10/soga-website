@@ -309,11 +309,11 @@ tr:hover td{background:rgba(255,255,255,0.02);color:var(--text)}
 // ============================================================
 // SUPABASE CONFIG — KU BEDEL KAAGA
 // ============================================================
-const SUPABASE_URL  = 'YOUR_PROJECT_URL';
-const SUPABASE_KEY  = 'YOUR_ANON_KEY';
+const SUPABASE_URL  = 'https://opuiebofegybtcrywbjg.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wdWllYm9mZWd5YnRjcnl3YmpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MTg4MzgsImV4cCI6MjA5NjQ5NDgzOH0.vx8f4JvNTHl9uiWjQywtDfsKHzmYJAJiVlU1t0mjMwo';
 // ============================================================
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 let allMessages = [];
 let allMembers  = [];
@@ -326,26 +326,47 @@ async function doLogin() {
   const btn   = document.getElementById('loginBtn');
   const err   = document.getElementById('loginError');
   err.style.display = 'none';
+
+  if (!email || !pass) {
+    err.textContent = 'Email iyo password gali!';
+    err.style.display = 'block';
+    return;
+  }
+
   btn.disabled = true;
   btn.textContent = 'Signing in...';
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) {
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+
+    if (error) {
+      err.textContent = 'Khalad: ' + error.message;
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+      return;
+    }
+
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
+
+    if (!profile || !['super_admin','editor'].includes(profile.role)) {
+      await sb.auth.signOut();
+      err.textContent = 'Admin access ma haysid. Role: ' + (profile ? profile.role : 'unknown');
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+      return;
+    }
+
+    currentUser = profile;
+    showDashboard();
+
+  } catch(e) {
+    err.textContent = 'Connection error: ' + e.message;
     err.style.display = 'block';
     btn.disabled = false;
     btn.textContent = 'Sign In';
-    return;
   }
-  const { data: profile } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
-  if (!profile || !['super_admin','editor'].includes(profile.role)) {
-    await sb.auth.signOut();
-    err.textContent = 'Admin access ma haysid.';
-    err.style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = 'Sign In';
-    return;
-  }
-  currentUser = profile;
-  showDashboard();
 }
 
 async function doLogout() {
