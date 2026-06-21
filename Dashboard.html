@@ -684,16 +684,6 @@ async function saveSeminar(){
   if(result.error){showToast('Khalad: '+result.error.message,false);}
   else{showToast('Seminar waa la kaydiyay! ✓');closeModal();loadSeminars();loadAll();}
 }
-const {error}=await sb.from('seminars').insert({
-  title,type,event_date:date,location,
-  capacity:capacity?parseInt(capacity):null,
-  description:desc||null,
-  speaker_name:speaker||null,
-  speaker_image:speakerImageUrl
-});
-  btn.disabled=false;btn.textContent='Kaydi';
-  if(error){showToast('Khalad: '+error.message,false);}
-  else{showToast('Seminar waa la kaydiyay! ✓');closeModal();loadSeminars();loadAll();}
 
 document.getElementById('seminarModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 </script>
