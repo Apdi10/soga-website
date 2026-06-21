@@ -430,11 +430,8 @@ footer{background:var(--blue-dark);color:rgba(255,255,255,0.8);padding:3.5rem 4r
         <div class="loc-map"><i class="ti ti-map"></i><div class="loc-dot"></div></div>
         <div class="loc-info"><h4>Based in Mogadishu, Somalia</h4><p>SOGA is headquartered in Mogadishu with members and activities spanning Somalia and the wider Horn of Africa region.</p></div>
       </div>
-      <div class="seminar-list">
-        <div class="seminar-item reveal delay-1"><div class="seminar-date"><div class="month">Jul</div><div class="day">14</div></div><div class="seminar-info"><h4>Introduction to Geological Mapping</h4><p>Practical training on field mapping techniques, GPS data collection, and cross-section interpretation.</p><span class="seminar-type">Workshop</span></div></div>
-        <div class="seminar-item reveal delay-2"><div class="seminar-date"><div class="month">Aug</div><div class="day">02</div></div><div class="seminar-info"><h4>Somalia's Mineral Resources: Opportunities &amp; Challenges</h4><p>Keynote seminar exploring mineral wealth, regulatory frameworks, and investment landscape.</p><span class="seminar-type">Seminar</span></div></div>
-        <div class="seminar-item reveal delay-3"><div class="seminar-date"><div class="month">Sep</div><div class="day">18</div></div><div class="seminar-info"><h4>Annual SOGA Geoscience Symposium 2025</h4><p>Flagship annual event — research presentations, poster sessions, and professional networking.</p><span class="seminar-type">Symposium</span></div></div>
-        <div class="seminar-item reveal delay-4"><div class="seminar-date"><div class="month">Nov</div><div class="day">22</div></div><div class="seminar-info"><h4>Remote Sensing in Geological Exploration</h4><p>Technical workshop on satellite imagery, aerial photography, and GIS tools for Somali geology.</p><span class="seminar-type">Technical Workshop</span></div></div>
+      <div class="seminar-list" id="seminar-list">
+        <div style="padding:2rem;text-align:center;color:var(--text-muted)">Loading...</div>
       </div>
     </div>
   </div>
@@ -496,7 +493,7 @@ const SUPABASE_URL  = 'https://opuiebofegybtcrywbjg.supabase.co';
 const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wdWllYm9mZWd5YnRjcnl3YmpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MTg4MzgsImV4cCI6MjA5NjQ5NDgzOH0.vx8f4JvNTHl9uiWjQywtDfsKHzmYJAJiVlU1t0mjMwo';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-document.querySelector('.submit-btn').addEventListener('click', async () => {
+async function sendMessage() {
   const name = document.getElementById('f-name').value.trim();
   const email = document.getElementById('f-email').value.trim();
   const subject = document.getElementById('f-subject').value;
@@ -505,7 +502,43 @@ document.querySelector('.submit-btn').addEventListener('click', async () => {
   const { error } = await sb.from('contact_messages').insert({ name, email, subject, message });
   if (error) { alert('Khalad! Isku day mar kale.'); }
   else { alert('Fariintaada waa la helay! Mahadsanid.'); }
-});
+}
+
+// Load seminars from Supabase
+async function loadSeminars() {
+  const { data, error } = await sb
+    .from('seminars')
+    .select('*')
+    .order('event_date', { ascending: true })
+    .limit(4);
+
+  if (error || !data) return;
+
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const html = data.map(s => {
+    const date = new Date(s.event_date);
+    const month = months[date.getMonth()];
+    const day = date.getDate();
+    return `
+      <div class="seminar-item reveal">
+        <div class="seminar-date">
+          <div class="month">${month}</div>
+          <div class="day">${day}</div>
+        </div>
+        <div class="seminar-info">
+          <h4>${s.title}</h4>
+          <p>${s.description || ''}</p>
+          <span class="seminar-type">${s.type || 'Event'}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('seminar-list').innerHTML = html;
+}
+
+document.querySelector('.submit-btn').addEventListener('click', sendMessage);
+loadSeminars();
 </script>
 
 <script>
