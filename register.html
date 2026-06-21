@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join SOGA — Register</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--blue:#1565C0;--blue-dark:#0D47A1;--green:#2E7D32;--green-light:#66BB6A;--green-pale:#E8F5E9;--white:#fff;--cream:#F0F7F0;--text:#1A2744;--muted:#4A6741;--border:#C5DFC5}
+body{font-family:'Inter',sans-serif;background:var(--cream);min-height:100vh;display:flex;flex-direction:column}
+nav{background:var(--blue-dark);border-bottom:3px solid var(--green);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo-text{font-size:15px;font-weight:700;color:#fff}
+.nav-logo-sub{font-size:11px;color:#42A5F5}
+.back-btn{color:rgba(255,255,255,0.7);font-size:13px;text-decoration:none;display:flex;align-items:center;gap:6px;transition:color 0.2s}
+.back-btn:hover{color:#fff}
+.page{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem}
+.card{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:2.5rem;width:100%;max-width:480px;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
+.card-header{text-align:center;margin-bottom:2rem}
+.card-icon{width:56px;height:56px;background:var(--green-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+.card-icon i{font-size:28px;color:var(--green)}
+.card-title{font-size:1.4rem;font-weight:700;color:var(--text);margin-bottom:0.3rem}
+.card-sub{font-size:13px;color:var(--muted)}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--green);margin-bottom:5px;font-weight:700}
+.form-group input,.form-group select{width:100%;background:var(--cream);border:1.5px solid var(--border);color:var(--text);padding:11px 13px;font-family:'Inter',sans-serif;font-size:14px;border-radius:6px;outline:none;transition:border-color 0.2s}
+.form-group input:focus,.form-group select:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(21,101,192,0.08)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.submit-btn{width:100%;padding:13px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;margin-top:0.5rem}
+.submit-btn:hover{background:#256427;transform:translateY(-1px)}
+.submit-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.divider{height:1px;background:var(--border);margin:1.5rem 0}
+.login-link{text-align:center;font-size:13px;color:var(--muted)}
+.login-link a{color:var(--blue);text-decoration:none;font-weight:600}
+.login-link a:hover{text-decoration:underline}
+.alert{padding:0.9rem 1.1rem;border-radius:6px;font-size:13px;margin-bottom:1rem;display:none;align-items:center;gap:8px}
+.alert.error{background:#FFEBEE;border:1px solid #FFCDD2;color:#C62828;display:flex}
+.alert.success{background:var(--green-pale);border:1px solid #A5D6A7;color:var(--green);display:flex}
+.pending-msg{text-align:center;padding:2rem;display:none}
+.pending-msg i{font-size:48px;color:var(--green);display:block;margin-bottom:1rem}
+.pending-msg h3{font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:0.5rem}
+.pending-msg p{font-size:13px;color:var(--muted);line-height:1.7}
+.pending-msg .home-btn{display:inline-block;margin-top:1.5rem;padding:10px 24px;background:var(--green);color:#fff;border-radius:6px;text-decoration:none;font-size:13px;font-weight:700}
+footer{background:var(--blue-dark);padding:1.5rem 2rem;text-align:center}
+footer p{font-size:12px;color:rgba(255,255,255,0.4)}
+@media(max-width:500px){.form-row{grid-template-columns:1fr}.card{padding:1.5rem}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <div><div class="nav-logo-text">SOGA</div><div class="nav-logo-sub">Somali Geoscience Association</div></div>
+  </a>
+  <a class="back-btn" href="index.html"><i class="ti ti-arrow-left"></i> Back to Website</a>
+</nav>
+
+<div class="page">
+  <div class="card">
+
+    <!-- SUCCESS STATE -->
+    <div class="pending-msg" id="successMsg">
+      <i class="ti ti-circle-check"></i>
+      <h3>Application Received!</h3>
+      <p>Codsigaaga waa la helay. Admin-ka ayaa dib u xaqiijin doona oo kuu soo dir doona email marka account-kaagu la firiyay.</p>
+      <a class="home-btn" href="index.html">← Website ku noqo</a>
+    </div>
+
+    <!-- FORM STATE -->
+    <div id="formWrap">
+      <div class="card-header">
+        <div class="card-icon"><i class="ti ti-user-plus"></i></div>
+        <div class="card-title">Join SOGA</div>
+        <div class="card-sub">Xubinnimada codso — admin ayaa ansixin doona</div>
+      </div>
+
+      <div class="alert error" id="errorAlert"><i class="ti ti-alert-circle"></i><span id="errorMsg">Khalad ayaa dhacay</span></div>
+
+      <div class="form-row">
+        <div class="form-group"><label>Magaca Hore *</label><input type="text" id="firstName" placeholder="Magaca Hore"></div>
+        <div class="form-group"><label>Magaca Dambe *</label><input type="text" id="lastName" placeholder="Magaca Dambe"></div>
+      </div>
+      <div class="form-group"><label>Email *</label><input type="email" id="regEmail" placeholder="you@example.com"></div>
+      <div class="form-group"><label>Password *</label><input type="password" id="regPass" placeholder="password"></div>
+      <div class="form-group"><label>Telefoon</label><input type="tel" id="regPhone" placeholder="+252 61 XXX XXXX"></div>
+      <div class="form-group"><label>Hay'adda / Jaamacadda</label><input type="text" id="regInstitution" placeholder="Jaamacadda Ummadda"></div>
+      <div class="form-group">
+        <label>Xirfadda *</label>
+        <select id="regField">
+          <option value="">— Dooro —</option>
+          <option value="Geologist">Geologist</option>
+          <option value="Hydrogeologist">Hydrogeologist</option>
+          <option value="Mining Engineer">Mining Engineer</option>
+          <option value="Environmental Scientist">Environmental Scientist</option>
+          <option value="Researcher">Researcher</option>
+          <option value="Student">Student</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+
+      <button class="submit-btn" id="regBtn" onclick="doRegister()">Codso Xubinnimada</button>
+
+      <div class="login-link" style="margin-top:1rem">
+        Horey u diiwaan gashan? <a href="index.html#contact">Sign in</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer><p>&copy; 2025 Somali Geoscience Association (SOGA)</p></footer>
+
+<script>
+const SUPABASE_URL = 'https://opuiebofegybtcrywbjg.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wdWllYm9mZWd5YnRjcnl3YmpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MTg4MzgsImV4cCI6MjA5NjQ5NDgzOH0.vx8f4JvNTHl9uiWjQywtDfsKHzmYJAJiVlU1t0mjMwo';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function showError(msg){
+  document.getElementById('errorMsg').textContent = msg;
+  document.getElementById('errorAlert').style.display = 'flex';
+}
+
+function hideError(){
+  document.getElementById('errorAlert').style.display = 'none';
+}
+
+async function doRegister(){
+  hideError();
+  const firstName   = document.getElementById('firstName').value.trim();
+  const lastName    = document.getElementById('lastName').value.trim();
+  const email       = document.getElementById('regEmail').value.trim();
+  const password    = document.getElementById('regPass').value;
+  const phone       = document.getElementById('regPhone').value.trim();
+  const institution = document.getElementById('regInstitution').value.trim();
+  const field       = document.getElementById('regField').value;
+
+  if(!firstName||!lastName){showError('Fadlan magacaaga gali!');return;}
+  if(!email){showError('Email-kaaga gali!');return;}
+  if(!password||password.length<6){showError('Password-ku waa inuu leeyahay 6 xaraf oo yaraan!');return;}
+  if(!field){showError('Xirfadaada dooro!');return;}
+
+  const btn = document.getElementById('regBtn');
+  btn.disabled = true;
+  btn.textContent = 'Codsanaya...';
+
+  const fullName = firstName + ' ' + lastName;
+
+  const { data, error } = await sb.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { full_name: fullName }
+    }
+  });
+
+  if(error){
+    showError(error.message);
+    btn.disabled = false;
+    btn.textContent = 'Codso Xubinnimada';
+    return;
+  }
+
+  // Profile update
+  if(data.user){
+    await sb.from('profiles').update({
+      full_name: fullName,
+      phone: phone || null,
+      institution: institution || null,
+      role: 'member',
+      status: 'pending'
+    }).eq('id', data.user.id);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Codso Xubinnimada';
+  document.getElementById('formWrap').style.display = 'none';
+  document.getElementById('successMsg').style.display = 'block';
+}
+</script>
+</body>
+</html>
