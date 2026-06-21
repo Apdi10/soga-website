@@ -667,18 +667,6 @@ async function saveSeminar(){
 var imgFile = document.getElementById('sem-speaker-img').files[0];
 if (imgFile) {
   const fileName = Date.now() + '_' + imgFile.name.replace(/\s/g,'_');
-  const { data: uploadData, error: uploadError } = await sb.storage
-    .from('speaker-images').upload(fileName, imgFile, {upsert:true});
-  if (!uploadError) {
-    const { data: urlData } = sb.storage
-      .from('speaker-images').getPublicUrl(fileName);
-    speakerImageUrl = urlData.publicUrl;
-  }
-}
-  var speakerImageUrl = null;
-const imgFile = document.getElementById('sem-speaker-img').files[0];
-if (imgFile) {
-  const fileName = Date.now() + '_' + imgFile.name.replace(/\s/g,'_');
   const { error: uploadError } = await sb.storage
     .from('speaker-images').upload(fileName, imgFile, {upsert:true});
   if (!uploadError) {
@@ -686,6 +674,7 @@ if (imgFile) {
       .from('speaker-images').getPublicUrl(fileName);
     speakerImageUrl = urlData.publicUrl;
   }
+}
 }
 const {error}=await sb.from('seminars').insert({
   title,type,event_date:date,location,
