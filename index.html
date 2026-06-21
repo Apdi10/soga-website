@@ -506,7 +506,10 @@ async function sendMessage() {
 
 // Load seminars from Supabase
 async function loadSeminars() {
-  const { data, error } = await sb
+  const anonClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { persistSession: false }
+  });
+  const { data, error } = await anonClient
     .from('seminars')
     .select('*')
     .order('event_date', { ascending: true })
@@ -534,7 +537,8 @@ async function loadSeminars() {
       </div>`;
   }).join('');
 
-  document.getElementById('seminar-list').innerHTML = html;
+  document.querySelectorAll('#seminar-list .reveal')
+  .forEach(el => el.classList.add('visible'));
 }
 
 document.querySelector('.submit-btn').addEventListener('click', sendMessage);
