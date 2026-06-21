@@ -132,6 +132,29 @@ tr:hover td{background:rgba(255,255,255,0.02);color:var(--text)}
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--surface);border:1px solid var(--green-dim);color:var(--green);padding:0.7rem 1.2rem;border-radius:6px;font-size:12px;font-family:var(--mono);opacity:0;transform:translateY(10px);transition:all 0.3s;z-index:999;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
 
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:2rem;width:480px;max-width:95vw}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.modal-title{font-size:15px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.modal-title i{font-size:18px;color:var(--green)}
+.modal-close{background:transparent;border:none;color:var(--text3);font-size:22px;cursor:pointer;line-height:1}
+.modal-close:hover{color:var(--red)}
+.modal .form-group{margin-bottom:1rem}
+.modal .form-group label{display:block;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:5px;font-weight:600;font-family:var(--mono)}
+.modal .form-group input,.modal .form-group select,.modal .form-group textarea{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:0.65rem 0.9rem;font-family:var(--sans);font-size:13px;border-radius:5px;outline:none;transition:border-color 0.2s}
+.modal .form-group input:focus,.modal .form-group select:focus,.modal .form-group textarea:focus{border-color:var(--green-dim)}
+.modal .form-group select option{background:var(--surface)}
+.modal-footer{display:flex;gap:0.75rem;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border)}
+.modal-btn{flex:1;padding:0.7rem;font-size:13px;font-weight:600;border-radius:5px;cursor:pointer;font-family:var(--sans);transition:all 0.2s;border:none}
+.modal-btn.primary{background:var(--green);color:#0B0F0C}
+.modal-btn.primary:hover{background:#25a85e}
+.modal-btn.primary:disabled{opacity:0.5;cursor:not-allowed}
+.modal-btn.cancel{background:transparent;color:var(--text3);border:1px solid var(--border2)}
+.modal-btn.cancel:hover{border-color:var(--red);color:var(--red)}
+.add-btn{padding:0.45rem 1rem;background:var(--green);color:#0B0F0C;font-size:12px;font-weight:700;border-radius:4px;cursor:pointer;border:none;display:flex;align-items:center;gap:6px;transition:all 0.2s}
+.add-btn:hover{background:#25a85e}
+
 @media(max-width:900px){.sidebar{display:none}.stats-row{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -277,6 +300,7 @@ tr:hover td{background:rgba(255,255,255,0.02);color:var(--text)}
     <div class="view" id="view-seminars">
       <div class="section-header">
         <div class="section-title"><i class="ti ti-calendar-event"></i> Seminars <span class="count-pill" id="sem-count">0</span></div>
+        <button class="add-btn" onclick="openModal()"><i class="ti ti-plus"></i> Seminar Ku Dar</button>
       </div>
       <div class="table-wrap">
         <table>
@@ -619,6 +643,65 @@ function showToast(msg) {
   document.getElementById('loginEmail').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
   document.getElementById('loginPass').addEventListener('keydown',  e=>{ if(e.key==='Enter') doLogin(); });
 })();
+
+function openModal(){
+  document.getElementById('seminarModal').classList.add('open');
+  document.getElementById('sem-date').value=new Date().toISOString().split('T')[0];
+}
+function closeModal(){
+  document.getElementById('seminarModal').classList.remove('open');
+  ['sem-title','sem-location','sem-speaker','sem-desc','sem-capacity'].forEach(id=>document.getElementById(id).value='');
+}
+async function saveSeminar(){
+  const title=document.getElementById('sem-title').value.trim();
+  const type=document.getElementById('sem-type').value;
+  const date=document.getElementById('sem-date').value;
+  const location=document.getElementById('sem-location').value.trim();
+  const capacity=document.getElementById('sem-capacity').value;
+  const speaker=document.getElementById('sem-speaker').value.trim();
+  const desc=document.getElementById('sem-desc').value.trim();
+  if(!title||!date||!location){showToast('Fadlan buuxi: Title, Taarikh, Goobta!',false);return;}
+  const btn=document.getElementById('saveSemBtn');
+  btn.disabled=true;btn.textContent='Kaydinaya...';
+  const {error}=await sb.from('seminars').insert({
+    title,type,event_date:date,location,
+    capacity:capacity?parseInt(capacity):null,
+    description:speaker?(desc?desc+'\n\nSpeaker: '+speaker:'Speaker: '+speaker):desc||null
+  });
+  btn.disabled=false;btn.textContent='Kaydi';
+  if(error){showToast('Khalad: '+error.message,false);}
+  else{showToast('Seminar waa la kaydiyay! ✓');closeModal();loadSeminars();loadAll();}
+}
+document.getElementById('seminarModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 </script>
+
+<div class="modal-overlay" id="seminarModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><i class="ti ti-calendar-plus"></i> Seminar Cusub Ku Dar</div>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="form-group"><label>Title *</label><input type="text" id="sem-title" placeholder="Seminar-ka magaciisa"></div>
+    <div class="form-group"><label>Nooca *</label>
+      <select id="sem-type">
+        <option value="workshop">Workshop</option>
+        <option value="seminar">Seminar</option>
+        <option value="symposium">Symposium</option>
+        <option value="conference">Conference</option>
+        <option value="training">Training</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Taarikh *</label><input type="date" id="sem-date"></div>
+    <div class="form-group"><label>Goobta *</label><input type="text" id="sem-location" placeholder="Mogadishu, Hotel Jazeera"></div>
+    <div class="form-group"><label>Capacity</label><input type="number" id="sem-capacity" placeholder="100" min="1"></div>
+    <div class="form-group"><label>Speaker / Qofka Jeediyaha</label><input type="text" id="sem-speaker" placeholder="Dr. Ahmed Hassan"></div>
+    <div class="form-group"><label>Description</label><textarea id="sem-desc" rows="3" placeholder="Faahfaahin..."></textarea></div>
+    <div class="modal-footer">
+      <button class="modal-btn cancel" onclick="closeModal()">Jooji</button>
+      <button class="modal-btn primary" id="saveSemBtn" onclick="saveSeminar()">Kaydi</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
